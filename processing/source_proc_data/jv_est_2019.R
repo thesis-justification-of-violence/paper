@@ -1,4 +1,4 @@
-## JV Control Social: Carabineros reprimen marchas
+## Justification of violence: Students throws rocks -----------------------------------------------
 
 sjmisc::frq(procjv$jv_est_2019) # See freqa
 

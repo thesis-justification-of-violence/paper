@@ -49,3 +49,14 @@ procjv$sj_ceo_rec <- procjv$sj_ceo # create variable with new name #NOTE: this i
 procjv$sj_ceo <- sjlabelled::set_label(procjv$sj_ceo, label = "J CEO") # label
 procjv$sj_ceo_rec <- sjlabelled::set_label(procjv$sj_ceo_rec, label = "J CEO") # label
 
+## Sense of justice CEO (categorical) ------------------------------------------------------------------------------------------
+
+procjv$sj_ceo_cat[procjv$sj_ceo == 0] <- 0
+procjv$sj_ceo_cat[procjv$sj_ceo < 0] <- 0
+procjv$sj_ceo_cat[procjv$sj_ceo > 0] <- 1
+
+procjv$sj_ceo_cat <- sjlabelled::set_label(procjv$sj_ceo_cat, label = "J CEO")
+
+procjv$sj_ceo_cat_factor <- factor(procjv$sj_ceo_cat, levels = c(0,1), labels = c("Just or Under-rewarded", "Over-rewarded"))
+
+procjv$sj_ceo_cat_factor <- sjlabelled::set_label(procjv$sj_ceo_cat_factor, label = "J CEO")

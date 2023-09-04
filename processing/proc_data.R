@@ -98,3 +98,11 @@ source("processing/source_proc_data/jv_carab2_2019.R")
 source("processing/source_proc_data/jv_est_2019.R")
 source("processing/source_proc_data/sj_obrero.R")
 source("processing/source_proc_data/sj_ceo.R")
+source("processing/source_proc_data/sj_entrevistado.R")
+source("processing/source_proc_data/sdo_index.R")
+source("processing/source_proc_data/rwa_index.R")
+source("processing/source_proc_data/trato_carab.R")
+
+# 6. Save proc data --------------------------------------------
+
+saveRDS(procjv, "input/data/proc/procjv.RDS")

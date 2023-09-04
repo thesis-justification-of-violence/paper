@@ -1,4 +1,4 @@
-## JV Control Social: Carabineros reprimen marchas
+## Justification of violence: Police repress marches --------------------------------------------------------
 
 sjmisc::frq(procjv$jv_carab1_2019) # See freqa
 

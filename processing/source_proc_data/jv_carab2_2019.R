@@ -1,4 +1,4 @@
-## JV Control Social: Carabineros desalojan tomas
+## Justification of violence: Police evicts occupied schools -----------------------------------------------
 
 sjmisc::frq(procjv$jv_carab2_2019) # See freqa
 

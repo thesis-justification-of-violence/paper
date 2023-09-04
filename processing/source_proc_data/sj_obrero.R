@@ -57,3 +57,15 @@ procjv$sj_obrero_rec <- procjv$sj_obrero*-1 # recode for better interpretation
 
 procjv$sj_obrero <- sjlabelled::set_label(procjv$sj_obrero, label = "J Worker") # Label
 procjv$sj_obrero_rec <- sjlabelled::set_label(procjv$sj_obrero_rec, label = "J' Worker") # Label
+
+## Sense of justice worker (categorical) ---------------------------------------------------
+
+procjv$sj_obrero_cat[procjv$sj_obrero == 0] <- 0
+procjv$sj_obrero_cat[procjv$sj_obrero < 0] <- 1
+procjv$sj_obrero_cat[procjv$sj_obrero > 0] <- 0
+
+procjv$sj_obrero_cat <- sjlabelled::set_label(procjv$sj_obrero_cat, label = "J Worker")
+
+procjv$sj_obrero_cat_factor <- factor(procjv$sj_obrero_cat, levels = c(0,1), labels = c("Just or Over-rewarded", "Under-rewarded"))
+
+procjv$sj_obrero_cat_factor <- sjlabelled::set_label(procjv$sj_obrero_cat_factor, label = "J Worker")
