@@ -1,0 +1,1480 @@
+---
+title: |
+  ![](../input/images/logo-sociales.jpg){width=25% height=25%}  
+  Documento de Procesamiento
+  
+subtitle: "¿Quién justifica qué? El rol del sentido de injusticia en las justificaciones de violencia en contexto de protesta"
+author: 
+  - Martin Venegas Márquez
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+output:
+    bookdown::html_document2:
+          number_sections: yes
+          toc: yes
+          toc_float: yes
+          theme: yeti
+    
+linkcolor: black
+urlcolor: blue
+link-citations: yes
+---
+
+<style type="text/css">
+
+h1 {
+  font-size: 38px;
+  text-align: center;
+}
+h4.author { /* Header 4 - and the author and data headers use this too  */
+    font-size: 18px;
+  text-align: center;
+}
+h4.date { /* Header 4 - and the author and data headers use this too  */
+  font-size: 18px;
+  text-align: center;
+}
+</style>
+
+
+\newpage
+
+\setcounter{tocdepth}{2}
+\renewcommand{\contentsname}{Tabla de contenidos}
+\tableofcontents
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(comment=NA, prompt=FALSE, cache=FALSE, echo=TRUE, results='asis', message = F, warning = F)
+summarytools::st_options(bootstrap.css     = FALSE,
+           plain.ascii       = FALSE,   
+           style             = "rmarkdown",
+           dfSummary.silent  = TRUE, 
+           footnote          = NA,
+           subtitle.emphasis = FALSE,
+           headings =  F,
+           lang =  "es")
+summarytools::st_css()
+
+```
+
+
+# Introduccion
+
+El presente documento corresponde al procesamiento de los datos la tesis llamada "¿Quién justifica qué? El rol del sentido de injusticia en las justificaciones de violencia en contexto de protesta".
+
+```{r}
+if (!require("pacman")) install.packages("pacman")  #si falta pacman, instalar
+if (!require("tinytex")) install.packages("tinytex")#si falta tinytex, instala
+
+pacman::p_load(tidyverse, sjlabelled, ggplot2, sjmisc, kableExtra, table1, SciViews, sjPlot, car) # librerias
+
+```
+
+```{r load}
+load("../input/data/ELSOC_Wide_2016_2019_v1.00_R.RData") # cargar base
+```
+
+```{r select}
+
+# Seleccionar y renombrar variables para el análisis
+procjv <- elsoc_wide_2016_2019 %>% dplyr::select(
+                                      # idencuesta,
+                                      # Variables dependientes
+                                      ## Justificacion violencia por el control social
+                                      jv_carab1_2019 = f05_03_w04, # Carabineros reprimen marchas
+                                      jv_carab2_2019 = f05_04_w04, # Carabineros desalojen tomas
+                                      
+                                      ## Justificacon violencia por el cambio social
+                                      jv_est_2019 = f05_07_w04, # Estudiantes tiren piedras
+                                      
+                                      # Variables independientes
+                                      
+                                      ## Justicia distributiva
+                                      salario_perc_ceo = d03_01_rev_w04, # Salario percibido CEO
+                                      salario_perc_obrero = d03_02_rev_w04, # Salario percibido obrero
+                                      salario_just_ceo = d04_01_rev_w04, # Salario justo CEO
+                                      salario_just_obrero = d04_02_rev_w04, # Salario justo obrero
+                                      ingreso_justo = m15_rev_w04, # Ingreso considerado justo
+                                    
+                                      # Variables de control (literatura)
+                                      
+                                      ## Pertenencia a grupos desventajados
+                                      
+                      ## Nota: Las variables relacionadas a a ingresos que contengan un "rev" están revisadas por el equipo que creo la       encuesta, por lo que están exentas de problemas de digitacion y similares.
+                
+                                      
+                                      ingreso = m13_rev_w04, # Ingreso mensual (monto)
+                                      ingreso_tramos = m14_w04, # Ingreso mensual (tramos)
+                                      educ = m01_w04, # Nivel educacional del entrevistado
+                                      ingreso_satisfact = m16_w04, # Satisfaccion con los ingresos
+                                      sexo = m0_sexo_w04, # Sexo del entrevistado
+                                      indigena = m53_w04, # Pertenencia a pueblos indigenas
+                      
+                                      ## Ideología (SDO y RWA)
+                                      sdo_soc_ideal = c18_01_w04, # Una sociedad ideal requiere que algunos grupos estén en una posicion superior y otros en una posicion inferior
+                                      sdo_grupos_inferiores = c18_12_w04, # Algunos grupos de personas son simplemente inferiores a otros grupos
+                                      sdo_oportunidades_iguales = c18_02_w04, # Debiéramos trabajar para dar a todos los grupos la misma oportunidad de tener éxito
+                                      sdo_condiciones_iguales = c18_03_w04, # Deberíamos hacer todo lo posible por igualar las condiciones de diferentes grupos
+                                      rwa_gobierno_firme = c18_04_w04, # En vez de tanta preocupacion por los derechos de las personas, lo que este país necesita es un gobierno firme
+                                      rwa_mandatario_fuerte = c18_05_w04, # Lo que nuestro país necesita es un mandatario/a fuerte con la determinacion para llevarnos por el camino correcto
+                                      rwa_valores_ninos = c18_06_w04, # La obediencia y el respeto por la autoridad son los valores más importantes que los niños debieran aprender
+                                      rwa_obediencia_discplina = c18_07_w04, # Las verdaderas claves para tener una buena vida son la obediencia y la disciplina
+                        
+                        
+                                      ## Percepcion trato justo
+                                      trato_salud = c35_01_w04, # Trato respetuoso en servicios de salud
+                                      trato_carab = c35_03_w04, # Trato respetuoso carabineros
+                                      
+                                      # Variables de control (exploratoria)
+                                      
+                                      edad = m0_edad_w04, # Edad del entrevistado
+                                      #comuna = comuna_w04, # Comuna
+                                      pos_pol = c15_w04, # Posicion política
+                                      frec_marcha = c08_02_w04, # Frecuencia participacion en marchas
+                                      conf_carab = c05_03_w04 # Confianza en carabineros
+                                      )
+```
+
+```{r}
+# Definir N muestral. Para eso eliminaremos las filas donde todos los casos sean NA
+
+procjv_respaldoet <- procjv # Hacemos un respaldo de la base para que no se pierdan las etiquetas
+
+# Eliminar filas en donde todos los casos sean NA
+procjv <- procjv[rowSums(is.na(procjv)) != ncol(procjv),]
+
+procjv <-sjlabelled::copy_labels(procjv, procjv_respaldoet) # Copiamos las etiquetas una vez extraidos los NA
+
+# procjv <- procjv[] %>% janitor::remove_empty("rows") # Esta es una funcion del paquete janitor, la dejo para acordarme.
+
+```
+
+# Procesamiento
+
+## JV Control Social: Carabineros reprimen marchas
+
+### Descriptivo
+
+```{r}
+# Frecuencias
+sjmisc::frq(procjv$jv_carab1_2019)
+```
+
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$jv_carab1_2019<- set_na(procjv$jv_carab1_2019, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetado variable númerica
+procjv$jv_carab1_2019 <- sjlabelled::set_label(procjv$jv_carab1_2019, label = "JV: Represión")
+
+# Creacion variable factor
+procjv$jv_carab1_2019_factor <- factor(procjv$jv_carab1_2019, levels = c(1,2,3,4,5), labels = c("Nunca se justifica", "Pocas veces se justifica", "Algunas veces se justifica", "Muchas veces se justifica", "Siempre se justifica"))
+
+# Etiquetado variable factor
+procjv$jv_carab1_2019_factor <- sjlabelled::set_label(procjv$jv_carab1_2019_factor, label = "JV: Represión")
+```
+
+
+### Descriptivo final
+
+```{r}
+
+# Variable original (númerica)
+sjmisc::frq(procjv$jv_carab1_2019)
+
+# Variable factor
+sjmisc::frq(procjv$jv_carab1_2019_factor)
+```
+
+## JV Control Social: Carabineros desalojan tomas
+
+### Descriptivo
+
+```{r}
+# Frecuencias
+sjmisc::frq(procjv$jv_carab2_2019)
+```
+
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$jv_carab2_2019<- set_na(procjv$jv_carab2_2019, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetado variable númerica
+procjv$jv_carab2_2019 <- sjlabelled::set_label(procjv$jv_carab2_2019, label = "JV: Desalojo")
+
+# Creacion variable factor
+procjv$jv_carab2_2019_factor <- factor(procjv$jv_carab2_2019, levels = c(1,2,3,4,5), labels = c("Nunca se justifica", "Pocas veces se justifica", "Algunas veces se justifica", "Muchas veces se justifica", "Siempre se justifica"))
+
+# Etiquetado variable factor
+procjv$jv_carab2_2019_factor <- sjlabelled::set_label(procjv$jv_carab2_2019_factor, label = "JV: Desalojo")
+
+
+```
+
+
+### Descriptivo final
+
+```{r}
+
+# Variable original (númerica)
+sjmisc::frq(procjv$jv_carab2_2019)
+
+# Variable factor
+sjmisc::frq(procjv$jv_carab2_2019_factor)
+```
+
+## JV Cambio Social: Estudiantes tiran piedras
+
+### Descriptivo
+
+```{r}
+# Frecuencias
+sjmisc::frq(procjv$jv_est_2019)
+```
+
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$jv_est_2019<- set_na(procjv$jv_est_2019, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetado variable númerica
+procjv$jv_est_2019 <- sjlabelled::set_label(procjv$jv_est_2019, label = "JV: Piedras")
+
+# Creacion variable factor
+procjv$jv_est_2019_factor <- factor(procjv$jv_est_2019, levels = c(1,2,3,4,5), labels = c("Nunca se justifica", "Pocas veces se justifica", "Algunas veces se justifica", "Muchas veces se justifica", "Siempre se justifica"))
+
+# Etiquetado variable factor
+procjv$jv_est_2019_factor <- sjlabelled::set_label(procjv$jv_est_2019_factor, label = "JV: Piedras")
+
+
+```
+
+### Descriptivo final
+
+```{r}
+
+# Variable original (númerica)
+sjmisc::frq(procjv$jv_est_2019)
+
+# Variable factor
+sjmisc::frq(procjv$jv_est_2019_factor)
+```
+
+## Just. Dist: Salario percibido CEO
+
+### Descriptivo
+
+```{r}
+sjmisc::descr(procjv$salario_perc_ceo,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_perc_ceo, data = procjv)
+
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$salario_perc_ceo<- set_na(procjv$salario_perc_ceo, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetar
+procjv$salario_perc_ceo <- sjlabelled::set_label(procjv$salario_perc_ceo, label = "Ingresos Percibidos Gerente") 
+```
+
+
+### Descriptivo final
+
+```{r}
+sjmisc::descr(procjv$salario_perc_ceo,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_perc_ceo, data = procjv)
+
+```
+
+## Just. Dist: Salario percibido obrero
+
+### Descriptivo
+
+```{r}
+sjmisc::descr(procjv$salario_perc_obrero,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_perc_obrero, data = procjv)
+
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$salario_perc_obrero<- set_na(procjv$salario_perc_obrero, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetar
+procjv$salario_perc_obrero <- sjlabelled::set_label(procjv$salario_perc_obrero, label = "Ingresos Percibidos Obrero") 
+```
+
+
+### Descriptivo final
+
+```{r}
+sjmisc::descr(procjv$salario_perc_obrero,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_perc_obrero, data = procjv)
+
+```
+
+
+
+## Just. Dist: Salario justo CEO
+
+### Descriptivo
+
+```{r}
+sjmisc::descr(procjv$salario_just_ceo,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_just_ceo, data = procjv)
+
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$salario_just_ceo<- set_na(procjv$salario_just_ceo, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetar
+procjv$salario_just_ceo <- sjlabelled::set_label(procjv$salario_just_ceo, label = "Ingresos Justos Gerente") 
+```
+
+
+### Descriptivo final
+
+```{r}
+sjmisc::descr(procjv$salario_just_ceo,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_just_ceo, data = procjv)
+
+```
+
+## Just. Dist: Salario justo obrero
+
+### Descriptivo
+
+```{r}
+sjmisc::descr(procjv$salario_just_obrero,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_just_obrero, data = procjv)
+
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$salario_just_obrero<- set_na(procjv$salario_just_obrero, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetar
+procjv$salario_just_obrero <- sjlabelled::set_label(procjv$salario_just_obrero, label = "Ingresos Justos Obrero") 
+```
+
+
+### Descriptivo final
+
+```{r}
+sjmisc::descr(procjv$salario_just_obrero,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~salario_just_obrero, data = procjv)
+
+```
+
+### Otros ajustes
+
+```{r}
+## Descriptivos unidos
+
+table1::table1(~salario_perc_ceo + salario_perc_obrero + salario_just_ceo + salario_just_obrero, data = procjv)
+
+## Creacion sense of justice
+
+procjv$sj_obrero <- ln(procjv$salario_perc_obrero/procjv$salario_just_obrero)
+
+procjv$sj_obrero_rec <- procjv$sj_obrero*-1
+
+# procjv$sj_obrero_rec[procjv$sj_obrero_rec < 0] <- 0
+
+procjv$sj_ceo <- ln(procjv$salario_perc_ceo/procjv$salario_just_ceo)
+
+procjv$sj_ceo_rec <- procjv$sj_ceo
+
+# procjv$sj_ceo_rec[procjv$sj_ceo_rec < 0] <- 0
+
+## Etiquetado sense of justice
+
+procjv$sj_obrero <- sjlabelled::set_label(procjv$sj_obrero, label = "J Obrero")
+procjv$sj_obrero_rec <- sjlabelled::set_label(procjv$sj_obrero_rec, label = "J' Obrero")
+
+procjv$sj_ceo <- sjlabelled::set_label(procjv$sj_ceo, label = "J Gerente")
+procjv$sj_ceo_rec <- sjlabelled::set_label(procjv$sj_ceo_rec, label = "J Gerente")
+
+## Descriptivos sense of justice
+
+table1::table1(~sj_obrero + sj_obrero_rec + sj_ceo, data = procjv)
+
+## Histograms 
+sjPlot::plot_frq(procjv$sj_obrero, type = "histogram", show.mean = TRUE)
+sjPlot::plot_frq(procjv$sj_ceo, type = "histogram", show.mean = TRUE)
+
+## Creacion de sense of justicer categorico
+
+procjv$sj_ceo_cat[procjv$sj_ceo == 0] <- 0
+procjv$sj_ceo_cat[procjv$sj_ceo < 0] <- 1
+procjv$sj_ceo_cat[procjv$sj_ceo > 0] <- 2
+
+procjv$sj_obrero_cat[procjv$sj_obrero == 0] <- 0
+procjv$sj_obrero_cat[procjv$sj_obrero < 0] <- 1
+procjv$sj_obrero_cat[procjv$sj_obrero > 0] <- 2
+
+procjv$sj_obrero_cat <- sjlabelled::set_label(procjv$sj_obrero_cat, label = "J Obrero")
+procjv$sj_ceo_cat <- sjlabelled::set_label(procjv$sj_ceo_cat, label = "J Gerente")
+
+procjv$sj_ceo_cat_factor <- factor(procjv$sj_ceo_cat, levels = c(0,1,2), labels = c("Justo", "Subrecompensa", "Sobrerecompensa"))
+procjv$sj_obrero_cat_factor <- factor(procjv$sj_obrero_cat, levels = c(0,1,2), labels = c("Justo", "Subrecompensa", "Sobrerecompensa"))
+
+procjv$sj_obrero_cat_factor <- sjlabelled::set_label(procjv$sj_obrero_cat_factor, label = "J Obrero")
+procjv$sj_ceo_cat_factor <- sjlabelled::set_label(procjv$sj_ceo_cat_factor, label = "J Gerente")
+
+
+sjmisc::frq(procjv$sj_ceo_cat_factor)
+sjmisc::frq(procjv$sj_obrero_cat_factor)
+
+```
+
+## Grupos Desaventajados: Ingresos
+
+### Descriptivo
+
+```{r}
+sjmisc::descr(procjv$ingreso,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~ingreso, data = procjv)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$ingreso<- set_na(procjv$ingreso, na = c(-888,-999,0), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetar variable
+procjv$ingreso <- sjlabelled::set_label(procjv$ingreso, label = "Ingresos Entrevistado")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::descr(procjv$ingreso,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~ingreso, data = procjv)
+```
+
+## Grupos Desaventajados: Ingresos tramos
+
+```{r}
+sjmisc::frq(procjv$ingreso_tramos)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$ingreso_tramos<- set_na(procjv$ingreso_tramos, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$ingreso_tramos_factor <- factor(procjv$ingreso_tramos, levels = c(1:16), labels = c("Menos de $40.000 mensuales liquidos",
+                                                                                                     "De $40.001 a $85.000 mensuales liquidos",
+                                                                                                     "De $85.001 a $125.000 mensuales liquidos",
+                                                                                                     "De $125.001 a $170.000 mensuales liquidos",
+                                                                                                     "De $170.001 a $210.000 mensuales liquidos",
+                                                                                                     "De $210.001 a $230.000 mensuales liquidos",
+                                                                                                     "De $230.001 a $280.000 mensuales liquidos",
+                                                                                                     "De $280.001 a $320.000 mensuales liquidos",
+                                                                                                     "De $320.001 a $360.000 mensuales liquidos",
+                                                                                                     "De $360.001 a $400.000 mensuales liquidos",
+                                                                                                     "De $400.001 a $465.000 mensuales liquidos",
+                                                                                                     "De $465.001 a $540.000 mensuales liquidos",
+                                                                                                     "De $540.001 a $665.000 mensuales liquidos",
+                                                                                                     "De $665.001 a $850.000 mensuales liquidos",
+                                                                                                     "De $850.001 a $1.300.000 mensuales liquidos",
+                                                                                                     "Mas de $1.300.001 a mensuales liquidos"))
+
+# Etiquetado variable factor
+procjv$ingreso_tramos_factor <- sjlabelled::set_label(procjv$ingreso_tramos_factor, label = "Ingreso mensual del entrevistado en tramos")
+
+# Imputar marcas de clase de ingreso tramo a ingreso monto
+
+# Pero antes, saquemos el promedio de la gente que tiene ingresos mayores al monto del último tramo de ingreso (1.300.001)
+
+ingresos <- procjv$ingreso[procjv$ingreso > 1300001]
+ingresos.base <- data.frame(ingresos)
+ingresos.base <- na.omit(ingresos.base)
+mean(ingresos.base$ingresos)
+
+# El promedio de las 103 personas que tienen ingresos mayores a 1.300.001 es de 2.221.359, por lo que ese será el valor a imputar
+
+procjv$ingreso[procjv$ingreso_tramos == 1] <- 20000
+procjv$ingreso[procjv$ingreso_tramos == 2] <- 62500
+procjv$ingreso[procjv$ingreso_tramos == 3] <- 105000
+procjv$ingreso[procjv$ingreso_tramos == 4] <- 147500
+procjv$ingreso[procjv$ingreso_tramos == 5] <- 190000
+procjv$ingreso[procjv$ingreso_tramos == 6] <- 220000
+procjv$ingreso[procjv$ingreso_tramos == 7] <- 255000
+procjv$ingreso[procjv$ingreso_tramos == 8] <- 300000
+procjv$ingreso[procjv$ingreso_tramos == 9] <- 340000
+procjv$ingreso[procjv$ingreso_tramos == 10] <- 380000
+procjv$ingreso[procjv$ingreso_tramos == 11] <- 432500
+procjv$ingreso[procjv$ingreso_tramos == 12] <- 502500
+procjv$ingreso[procjv$ingreso_tramos == 13] <- 602500
+procjv$ingreso[procjv$ingreso_tramos == 14] <- 757500
+procjv$ingreso[procjv$ingreso_tramos == 15] <- 1075000
+procjv$ingreso[procjv$ingreso_tramos == 16] <- 2221359
+
+# Crear variable de quintiles
+
+# Construccion ingresos per capita quintiles
+procjv <- procjv %>% mutate(quintiles_ingreso = ntile(ingreso,5))
+
+## Recuperar NA
+procjv$quintiles_ingreso[is.na(procjv$quintiles_ingreso)] <- 99
+
+# Construccion ingresos per capita quintiles factor
+procjv$quintiles_ingreso_factor <- factor(procjv$quintiles_ingreso, levels = c(1,2,3,4,5,99), labels = c("Quintil 1", "Quintil 2", "Quintil 3", "Quintil 4", "Quintil 5", "No sabe/No responde"))
+procjv$quintiles_ingreso_factor <- set_label(procjv$quintiles_ingreso_factor,label = "Quintiles de ingreso del entrevistado ")
+
+# Construccion ingresos per capita quintiles factor con NS/NR al medio para correlaciones
+procjv$quintiles_ingreso_factor_cor <- factor(procjv$quintiles_ingreso, levels = c(1,2,99,3,4,5), labels = c("Quintil 1", "Quintil 2", "Quintil 3", "No sabe/No responde", "Quintil 4", "Quintil 5"))
+procjv$quintiles_ingreso_factor_cor <- set_label(procjv$quintiles_ingreso_factor,label = "Quintiles de de ingreso del entrevistado (NS/NR al medio) ")
+
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$ingreso_tramos)
+
+sjmisc::frq(procjv$ingreso_tramos_factor)
+
+```
+
+
+## Just Dist: Ingreso justo
+
+**NOTA:** Esta variable se usará para construir una variable de sentido de justicia donde el _Observador_ y el _Recompensado_ son la misma persona.
+
+### Descriptivo
+
+```{r}
+sjmisc::descr(procjv$ingreso_justo,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~ingreso_justo, data = procjv)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$ingreso_justo<- set_na(procjv$ingreso_justo, na = c(-888,-999,0), drop.levels = TRUE, as.tag = FALSE)
+
+# Etiquetar variable
+procjv$ingreso_justo <- sjlabelled::set_label(procjv$ingreso_justo, label = "Ingresos Justos Entrevistado")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::descr(procjv$ingreso_justo,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~ingreso_justo, data = procjv)
+```
+
+```{r}
+## Descriptivos unidos
+
+table1::table1(~ingreso + ingreso_justo, data = procjv)
+
+## Creacion sense of justice
+
+procjv$sj_entrevistado <- ln(procjv$ingreso/procjv$ingreso_justo)
+
+procjv$sj_entrevistado_rec <- procjv$sj_entrevistado*-1
+
+# procjv$sj_entrevistado_rec[procjv$sj_entrevistado_rec < 0] <- 0
+
+
+## Etiquetado sense of justice
+
+procjv$sj_entrevistado <- sjlabelled::set_label(procjv$sj_entrevistado, label = "J Entrevistado")
+procjv$sj_entrevistado_rec <- sjlabelled::set_label(procjv$sj_entrevistado_rec, label = "J' Entrevistado")
+
+## Descriptivos sense of justice
+
+table1::table1(~sj_obrero + sj_ceo + sj_entrevistado + sj_entrevistado_rec, data = procjv)
+
+## Histograms 
+sjPlot::plot_frq(na.omit(procjv$sj_entrevistado), type = "histogram", show.mean = TRUE)
+
+# Crear categorica sense of justice
+procjv$sj_entrevistado_cat[procjv$sj_entrevistado == 0] <- 0
+procjv$sj_entrevistado_cat[procjv$sj_entrevistado < 0] <- 1
+procjv$sj_entrevistado_cat[procjv$sj_entrevistado > 0] <- 2
+
+procjv$sj_entrevistado_cat <- sjlabelled::set_label(procjv$sj_entrevistado_cat, label = "J Entrevistado")
+
+procjv$sj_entrevistado_cat_factor <- factor(procjv$sj_entrevistado_cat, levels = c(0,1,2), labels = c("Justo", "Subrecompensa", "Sobrerecompensa"))
+
+procjv$sj_entrevistado_cat_factor <- sjlabelled::set_label(procjv$sj_entrevistado_cat_factor, label = "J Entrevistado")
+
+sjmisc::frq(procjv$sj_entrevistado_cat_factor)
+```
+
+## Grupos desaventajados: Satisfaccion con los ingresos
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$ingreso_satisfact)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$ingreso_satisfact<- set_na(procjv$ingreso_satisfact, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# # Aplicar inversión
+# procjv$ingreso_satisfact <- car::recode(procjv$ingreso_satisfact,"
+#                                               c(5) = 1;
+#                                               c(4) = 2;
+#                                               c(3) = 3;
+#                                               c(2) = 4;
+#                                               c(1) = 5")
+# 
+# procjv$ingreso_satisfact <- sjlabelled::set_labels(procjv$ingreso_satisfact, labels = c(
+#   "Totalmente insatisfecho" = 5,
+#   "Insatisfecho" = 4,
+#   "Ni satisfecho ni insatisfecho" = 3,
+#   "Satisfecho" = 2,
+#   "Totalmente satisfecho" = 1
+# ))
+# 
+# 
+# # Creación variable factor
+# procjv$ingreso_satisfact_factor <- factor(procjv$ingreso_satisfact, levels = c(1:5), labels = c("Totalmente satisfecho", "Satisfecho", "Ni satisfecho ni insatisfecho", "Insatisfecho", "Totalmente insatisfecho"))
+# 
+
+# Creacion variable factor
+procjv$ingreso_satisfact_factor <- factor(procjv$ingreso_satisfact, levels = c(1,2,3,4,5), labels = c("Totalmente insatisfecho",
+                                                                                                                  "Insatisfecho",
+                                                                                                                  "Ni satisfecho ni insatisfecho",
+                                                                                                                  "Satisfecho",
+                                                                                                                  "Totalmente satisfecho"))
+
+frq(procjv$ingreso_satisfact_factor)
+
+procjv$ingreso_satisfact_factor <- factor(procjv$ingreso_satisfact_factor, levels = c("Totalmente satisfecho",
+                                                                                         "Satisfecho",
+                                                                                         "Ni satisfecho ni insatisfecho",
+                                                                                         "Insatisfecho",
+                                                                                         "Totalmente insatisfecho")
+                                                        )
+
+frq(procjv$ingreso_satisfact_factor)
+
+
+
+# Etiquetado variable factor
+procjv$ingreso_satisfact_factor <- sjlabelled::set_label(procjv$ingreso_satisfact_factor, label = "Satisfaccion Ingresos")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$ingreso_satisfact)
+
+sjmisc::frq(procjv$ingreso_satisfact_factor)
+```
+
+
+## Grupos Desaventajados: Nivel educacional
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$educ)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$educ<- set_na(procjv$educ, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+set_na
+
+# Creacion variable factor
+procjv$educ_factor <- factor(procjv$educ, levels = c(1:10), labels = c("Sin estudios",
+                                                                                   "Educacion Basica o Preparatoria incompleta",
+                                                                                   "Educacion Basica o Preparatoria completa",
+                                                                                   "Educacion Media o Humanidades incompleta",
+                                                                                   "Educacion Media o Humanidades completa",
+                                                                                   "Tecnica Superior incompleta",
+                                                                                   "Tecnica Superior completa",
+                                                                                   "Universitaria incompleta",
+                                                                                   "Universitaria completa",
+                                                                                   "Estudios de posgrado (magister o doctorado)"))
+
+# Etiquetado variable factor
+procjv$educ_factor <- sjlabelled::set_label(procjv$educ_factor, label = "Nivel educacional del entrevistado")
+
+# Crear variable de educacion recodificada
+
+procjv$educ_rec <- car::recode(procjv$educ, "c(1,2)=1; c(3)=2;c(4,5)=3;c(6,7)=4;c(8,9,10)=5")
+
+# Re etiquetar categorias
+
+procjv$educ_rec <- set_labels(procjv$educ_rec,
+            labels=c( "Primaria incompleta menos"=1,
+                      "Primaria y secundaria baja"=2,
+                      "Secundaria alta"=3,
+                      "Terciaria ciclo corto"=4,
+                      "Terciaria y Postgrado"=5))
+
+# Etiquetado variable factor
+procjv$educ_rec <- sjlabelled::set_label(procjv$educ_rec, label = "Nivel Educacional CINE 11")
+
+# Creacion variable rec factor
+procjv$educ_rec_factor <- factor(procjv$educ_rec, levels = c(1,2,3,4,5), labels = c("Primaria incompleta menos",
+                                                                                                "Primaria y secundaria baja",
+                                                                                                "Secundaria alta",
+                                                                                                "Terciaria ciclo corto",
+                                                                                                "Terciaria y Postgrado"))
+
+
+
+# Etiquetado variable rec factor
+procjv$educ_rec_factor <- sjlabelled::set_label(procjv$educ_rec_factor, label = "Nivel Educacional CINE 11")
+
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$educ)
+
+sjmisc::frq(procjv$educ_factor)
+
+sjmisc::frq(procjv$educ_rec)
+
+sjmisc::frq(procjv$educ_rec_factor)
+```
+
+## Grupos Desaventajados: Sexo
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$sexo)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$sexo<- set_na(procjv$sexo, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$sexo_factor <- factor(procjv$sexo, levels = c(1,2), labels = c("Hombre", "Mujer"))
+
+# Etiquetado variable factor
+procjv$sexo_factor <- sjlabelled::set_label(procjv$sexo_factor, label = "Sexo")
+```
+
+### Desriptivo final
+
+```{r}
+sjmisc::frq(procjv$sexo)
+
+sjmisc::frq(procjv$sexo_factor)
+```
+
+## Grupos Desaventajados: Pertenencia a Pueblos indigenas
+
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$indigena)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$indigena <- set_na(procjv$indigena, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Crear variable de pertenencia a grupos indigenas recodificada
+
+procjv$indigena_rec <- car::recode(procjv$indigena, "c(10)=1; 
+                                   c(2,3,4,5,6,7,8,9,11)=2;
+                                   c(1)=3")
+
+procjv$indigena_rec <- sjlabelled::set_label(procjv$indigena_rec, label = "Pertenencia a Pueblo Indigena")
+
+# Creacion variable factor
+procjv$indigena_rec_factor <- factor(procjv$indigena_rec, levels = c(1,2,3), labels = c("Ninguno", "Otro pueblo", "Mapuche"))
+
+# Etiquetado variable factor
+procjv$indigena_rec_factor <- sjlabelled::set_label(procjv$indigena_rec_factor, label = "Pertenencia a Pueblo Indigena")
+```
+
+### Desriptivo final
+
+```{r}
+sjmisc::frq(procjv$indigena)
+
+sjmisc::frq(procjv$indigena_rec_factor)
+```
+
+## Ideología: Sociedad Ideal (SDO)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$sdo_soc_ideal)
+```
+
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$sdo_soc_ideal <- set_na(procjv$sdo_soc_ideal, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$sdo_soc_ideal_factor <- factor(procjv$sdo_soc_ideal, levels = c(1:5), labels = c("Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"))
+
+# Etiquetado variable factor
+procjv$sdo_soc_ideal_factor <- sjlabelled::set_label(procjv$sdo_soc_ideal_factor, label = "SDO: Sociedad ideal requiere grupos superiores e inferiores")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$sdo_soc_ideal)
+
+sjmisc::frq(procjv$sdo_soc_ideal_factor)
+
+```
+
+
+## Ideología: Grupos Inferiores (SDO)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$sdo_grupos_inferiores)
+```
+
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$sdo_grupos_inferiores <- set_na(procjv$sdo_grupos_inferiores, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$sdo_grupos_inferiores_factor <- factor(procjv$sdo_grupos_inferiores, levels = c(1:5), labels = c("Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"))
+
+# Etiquetado variable factor
+procjv$sdo_grupos_inferiores_factor <- sjlabelled::set_label(procjv$sdo_grupos_inferiores_factor, label = "SDO: Grupos son inferiores que otros")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$sdo_grupos_inferiores)
+
+sjmisc::frq(procjv$sdo_grupos_inferiores_factor)
+
+```
+
+
+## Ideología: Oportunidades Iguales (SDO)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$sdo_oportunidades_iguales)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$sdo_oportunidades_iguales <- set_na(procjv$sdo_oportunidades_iguales, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Aplicar inversión
+procjv$sdo_oportunidades_iguales <- car::recode(procjv$sdo_oportunidades_iguales,"
+                                              c(5) = 1;
+                                              c(4) = 2;
+                                              c(3) = 3;
+                                              c(2) = 4;
+                                              c(1) = 5")
+
+procjv$sdo_oportunidades_iguales <- sjlabelled::set_labels(procjv$sdo_oportunidades_iguales, labels = c(
+  "Totalmente en desacuerdo" = 5,
+  "En desacuerdo" = 4,
+  "Ni de acuerdo ni en desacuerdo" = 3,
+  "De acuerdo" = 2,
+  "Totalmente de acuerdo" = 1
+))
+
+procjv$sdo_oportunidades_iguales <- sjlabelled::set_label(procjv$sdo_oportunidades_iguales, label = "SDO: Misma oportunidad entre grupos (inversion aplicada)")
+
+# Creación variable factor
+procjv$sdo_oportunidades_iguales_factor <- factor(procjv$sdo_oportunidades_iguales, levels = c(1:5), labels = c("Totalmente de acuerdo", "De acuerdo", "Ni de acuerdo ni en desacuerdo", "En desacuerdo", "Totalmente en desacuerdo"))
+
+# Etiquetado variable factor
+procjv$sdo_oportunidades_iguales_factor <- sjlabelled::set_label(procjv$sdo_oportunidades_iguales_factor, label = "SDO: Misma oportunidad entre grupos (inversion aplicada)")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$sdo_oportunidades_iguales)
+
+sjmisc::frq(procjv$sdo_oportunidades_iguales_factor)
+
+```
+
+
+
+## Ideología: Condiciones iguales (SDO)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$sdo_condiciones_iguales)
+```
+
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$sdo_condiciones_iguales <- set_na(procjv$sdo_condiciones_iguales, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Aplicar inversión
+procjv$sdo_condiciones_iguales <- car::recode(procjv$sdo_condiciones_iguales,"
+                                              c(5) = 1;
+                                              c(4) = 2;
+                                              c(3) = 3;
+                                              c(2) = 4;
+                                              c(1) = 5")
+
+procjv$sdo_condiciones_iguales <- sjlabelled::set_labels(procjv$sdo_condiciones_iguales, labels = c(
+  "Totalmente en desacuerdo" = 5,
+  "En desacuerdo" = 4,
+  "Ni de acuerdo ni en desacuerdo" = 3,
+  "De acuerdo" = 2,
+  "Totalmente de acuerdo" = 1
+))
+
+procjv$sdo_condiciones_iguales <- sjlabelled::set_label(procjv$sdo_condiciones_iguales, label = "SDO: Condiciones iguales entre grupos (inversion aplicada)")
+
+# Creación variable factor
+procjv$sdo_condiciones_iguales_factor <- factor(procjv$sdo_condiciones_iguales, levels = c(1:5), labels = c("Totalmente de acuerdo", "De acuerdo", "Ni de acuerdo ni en desacuerdo", "En desacuerdo", "Totalmente en desacuerdo"))
+
+# Etiquetado variable factor
+procjv$sdo_condiciones_iguales_factor <- sjlabelled::set_label(procjv$sdo_condiciones_iguales_factor, label = "SDO: Condiciones iguales entre grupos (inversion aplicada)")
+
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$sdo_condiciones_iguales)
+
+sjmisc::frq(procjv$sdo_condiciones_iguales_factor)
+
+```
+
+### Otros ajustes
+
+```{r}
+# Crear indices para ideología
+
+# SDO
+
+procjv <- procjv %>% rowwise() %>% mutate(sdo_indice = sum(sdo_soc_ideal, sdo_grupos_inferiores, sdo_oportunidades_iguales, sdo_condiciones_iguales, na.rm = T)/4) # Promedias indicadores
+
+frq(procjv$sdo_indice)
+
+procjv$sdo_indice <- (procjv$sdo_indice-min(procjv$sdo_indice))/(max(procjv$sdo_indice)-min(procjv$sdo_indice)) # Estandarizar
+
+procjv$sdo_indice <- sjlabelled::set_label(procjv$sdo_indice, label = "SDO Indice") # Etiquetar
+
+# Frecuencias variables nuevas
+
+frq(procjv$sdo_indice)
+```
+
+## Ideología: Gobierno firme (RWA)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$rwa_gobierno_firme)
+```
+
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$rwa_gobierno_firme <- set_na(procjv$rwa_gobierno_firme, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$rwa_gobierno_firme_factor <- factor(procjv$rwa_gobierno_firme, levels = c(1:5), labels = c("Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"))
+
+# Etiquetado variable factor
+procjv$rwa_gobierno_firme_factor <- sjlabelled::set_label(procjv$rwa_gobierno_firme_factor, label = "RWA: Se necesita gobierno firme")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$rwa_gobierno_firme)
+
+sjmisc::frq(procjv$rwa_gobierno_firme_factor)
+```
+
+
+## Ideología: Mandatario fuerte (RWA)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$rwa_mandatario_fuerte)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$rwa_mandatario_fuerte <- set_na(procjv$rwa_mandatario_fuerte, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$rwa_mandatario_fuerte_factor <- factor(procjv$rwa_mandatario_fuerte, levels = c(1:5), labels = c("Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"))
+
+# Etiquetado variable factor
+procjv$rwa_mandatario_fuerte_factor <- sjlabelled::set_label(procjv$rwa_mandatario_fuerte_factor, label = "RWA: Mandatario determinado para guiarnos")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$rwa_mandatario_fuerte)
+
+sjmisc::frq(procjv$rwa_mandatario_fuerte_factor)
+```
+
+## Ideología: Valores niños (RWA)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$rwa_valores_ninos)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$rwa_valores_ninos <- set_na(procjv$rwa_valores_ninos, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$rwa_valores_ninos_factor <- factor(procjv$rwa_valores_ninos, levels = c(1:5), labels = c("Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"))
+
+# Etiquetado variable factor
+procjv$rwa_valores_ninos_factor <- sjlabelled::set_label(procjv$rwa_valores_ninos_factor, label = "RWA: Valores importantes que niños deberían aprender")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$rwa_valores_ninos)
+
+sjmisc::frq(procjv$rwa_valores_ninos_factor)
+```
+
+## Ideología: Obediencia y disciplina (RWA)
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$rwa_obediencia_discplina)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$rwa_obediencia_discplina <- set_na(procjv$rwa_obediencia_discplina, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$rwa_obediencia_discplina_factor <- factor(procjv$rwa_obediencia_discplina, levels = c(1:5), labels = c("Totalmente en desacuerdo", "En desacuerdo", "Ni de acuerdo ni en desacuerdo", "De acuerdo", "Totalmente de acuerdo"))
+
+# Etiquetado variable factor
+procjv$rwa_obediencia_discplina_factor <- sjlabelled::set_label(procjv$rwa_obediencia_discplina_factor, label = "RWA: Obedencia y disclpina como valores claves")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$rwa_obediencia_discplina)
+
+sjmisc::frq(procjv$rwa_obediencia_discplina_factor)
+```
+
+### Otros ajustes
+
+```{r}
+# RWA
+
+procjv <- procjv %>% rowwise() %>% mutate(rwa_indice = sum(rwa_gobierno_firme, rwa_mandatario_fuerte, rwa_valores_ninos, rwa_obediencia_discplina, na.rm = T)/4) # Promediar indicadores
+
+frq(procjv$rwa_indice)
+
+procjv$rwa_indice <- (procjv$rwa_indice-min(procjv$rwa_indice))/(max(procjv$rwa_indice)-min(procjv$rwa_indice)) # Estandarizar
+
+procjv$rwa_indice <- sjlabelled::set_label(procjv$rwa_indice, label = "RWA Indice") # Etiquetar
+
+### Farecuencia variable nueva
+
+frq(procjv$rwa_indice)
+```
+
+
+## Just. Proc: Trato respetuoso en servicios de salud
+
+### Descriptivo
+
+```{r}
+
+# Frecuencias
+
+sjmisc::frq(procjv$trato_salud)
+
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$trato_salud<- set_na(procjv$trato_salud, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$trato_salud_factor <- factor(procjv$trato_salud, levels = c(1,2,3,4,5), labels = c("Nunca", "Casi nunca", "A veces", "Casi siempre", "Siempre"))
+
+# Etiquetado variable factor
+procjv$trato_salud_factor <- sjlabelled::set_label(procjv$trato_salud_factor, label = "Trato Respetuoso Salud")
+
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$trato_salud)
+
+sjmisc::frq(procjv$trato_salud_factor)
+```
+
+## Just. Porc. Trato respetuoso carabineros
+
+### Descriptivo
+```{r}
+
+# Frecuencias
+
+sjmisc::frq(procjv$trato_carab)
+
+sjmisc::frq(procjv$trato_carab_factor)
+
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$trato_carab<- set_na(procjv$trato_carab, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$trato_carab_factor <- factor(procjv$trato_carab, levels = c(1,2,3,4,5), labels = c("Nunca", "Casi nunca", "A veces", "Casi siempre", "Siempre"))
+
+# Etiquetado variable factor
+procjv$trato_carab_factor <- sjlabelled::set_label(procjv$trato_carab_factor, label = "Trato Respetuoso Carabineros")
+
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$trato_carab)
+
+sjmisc::frq(procjv$trato_carab_factor)
+```
+
+## Control Exp: Edad del entrevistado
+
+### Descriptivo
+
+```{r}
+sjmisc::descr(procjv$edad,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~edad, data = procjv)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$edad<- set_na(procjv$edad, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+procjv$edad <- sjlabelled::set_label(procjv$edad, label = "Edad")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::descr(procjv$edad,
+      show = c("label","range", "mean", "sd", "NA.prc", "n"))%>%
+      kable(.,"markdown")
+
+table1::table1(~edad, data = procjv)
+```
+
+## Control Exp: Posicion política
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$pos_pol)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$pos_pol<- set_na(procjv$pos_pol, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Crear variable de pertenencia a grupos indigenas recodificada
+
+procjv$pos_pol_rec <- car::recode(procjv$indigena, "c(12)=1; c(0,1,2,3,4)=2; 5 = 3 ; c(6,7,8,9,10)=4; 11 = 5")
+
+procjv$pos_pol_rec <- sjlabelled::set_label(procjv$pos_pol_rec, label = "Posicion política")
+
+# Creacion variable factor
+procjv$pos_pol_rec_factor <- factor(procjv$pos_pol_rec, levels = c(1:5), labels = c("Ninguno",
+                                                                             "Izquierda",
+                                                                             "Centro",
+                                                                             "Derecha",
+                                                                             "Independiente"))
+
+# Etiquetado variable factor
+procjv$pos_pol_rec_factor <- sjlabelled::set_label(procjv$pos_pol_rec_factor, label = "Posicion Politica")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$pos_pol)
+
+sjmisc::frq(procjv$pos_pol_factor)
+```
+
+
+## Control Exp: Frecuencia participacion marchas
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$frec_marcha)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$frec_marcha<- set_na(procjv$frec_marcha, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$frec_marcha_factor <- factor(procjv$frec_marcha, levels = c(1,2,3,4,5), labels = c("Nunca",
+                                                                                                      "Casi nunca",
+                                                                                                      "A veces",
+                                                                                                      "Frecuentemente",
+                                                                                                      "Muy frecuentemente"))
+
+# Etiquetado variable factor
+procjv$frec_marcha_factor <- sjlabelled::set_label(procjv$frec_marcha_factor, label = "Frecuencia de Participacion en Marchas")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$frec_marcha)
+
+sjmisc::frq(procjv$frec_marcha_factor)
+```
+
+## Control Exp: Confianza en carabineros
+
+### Descriptivo
+
+```{r}
+sjmisc::frq(procjv$conf_carab)
+```
+
+### Recodificacion
+
+```{r}
+# Recoficiacion NA
+procjv$conf_carab<- set_na(procjv$conf_carab, na = c(-888,-999), drop.levels = TRUE, as.tag = FALSE)
+
+# Creacion variable factor
+procjv$conf_carab_factor <- factor(procjv$conf_carab, levels = c(1,2,3,4,5), labels = c("Nada",
+                                                                                        "Poca",
+                                                                                        "Algo",
+                                                                                        "Bastante",
+                                                                                        "Mucha"))
+
+# Etiquetado variable factor
+procjv$conf_carab_factor <- sjlabelled::set_label(procjv$conf_carab_factor, label = "Confianza en Carabineros")
+```
+
+### Descriptivo final
+
+```{r}
+sjmisc::frq(procjv$conf_carab)
+
+sjmisc::frq(procjv$conf_carab_factor)
+```
+
+
+# Guardar base de datos general
+
+```{r}
+save(procjv, file = "../input/data/procjv_all.RData") # Guardar base de datos con todas las variables
+
+procjv_analysis <- procjv %>%  dplyr::select(jv_carab1_2019_factor:jv_est_2019_factor,
+                                             sj_obrero,
+                                             sj_obrero_rec,
+                                             sj_ceo,
+                                             sj_ceo_rec,
+                                             sj_ceo_cat_factor:sj_obrero_cat_factor,
+                                             quintiles_ingreso_factor,
+                                             ingreso,
+                                             ingreso_justo,
+                                             sj_entrevistado,
+                                             sj_entrevistado_rec,
+                                             sj_entrevistado_cat_factor,
+                                             ingreso_satisfact_factor,
+                                             educ_rec_factor,
+                                             sexo_factor,
+                                             indigena_rec_factor,
+                                             sdo_soc_ideal_factor:rwa_obediencia_discplina_factor,
+                                             sdo_indice,
+                                             rwa_indice,
+                                             trato_salud_factor:trato_carab_factor,
+                                             pos_pol_rec_factor,
+                                             frec_marcha_factor,
+                                             conf_carab_factor,
+                                             salario_just_obrero,
+                                             salario_just_ceo,
+                                             salario_perc_obrero,
+                                             salario_perc_ceo)
+
+
+procjv_nums <- procjv %>%  dplyr::select(jv_carab1_2019:jv_est_2019,
+                                             sj_obrero,
+                                             sj_obrero_rec,
+                                             sj_ceo,
+                                             sj_ceo_rec,
+                                             ingreso,
+                                             sj_entrevistado,
+                                             sj_entrevistado_rec,
+                                             ingreso_satisfact,
+                                             educ_rec,
+                                             sexo,
+                                             indigena_rec,
+                                             sdo_soc_ideal:rwa_obediencia_discplina,
+                                             sdo_indice,
+                                             rwa_indice,
+                                             trato_salud:trato_carab,
+                                             pos_pol_rec,
+                                             frec_marcha,
+                                             conf_carab)
+
+## Aplicacion etiquetas a base de factores
+procjv_analysis_respaldoet <- procjv_analysis
+
+procjv_analysis_nona <- na.omit(procjv_analysis)
+
+procjv_analysis_nona <-sjlabelled::copy_labels(procjv_analysis_nona, procjv_analysis_respaldoet) # Copiamos las etiquetas una vez extraidos los NA
+
+## Aplicacion de etiquetas a base de nums
+procjv_nums_respaldoet <- procjv_nums
+
+procjv_nums_nona <- na.omit(procjv_nums)
+
+procjv_nums_nona <-sjlabelled::copy_labels(procjv_nums_nona, procjv_nums_respaldoet) # Copiamos las etiquetas una vez extraidos los NA
+
+
+save(procjv_analysis_nona, file = "../input/data/procjv_analysis_nona.RData") # Guardar base de datos solo con las variables de análisis
+
+save(procjv_nums_nona, file = "../input/data/procjv_nums_nona.RData") # Guardar base de datos solo con las variables de análisis
+
+```
+
