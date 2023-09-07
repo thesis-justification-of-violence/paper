@@ -102,6 +102,12 @@ source("processing/source_proc_data/sj_entrevistado.R")
 source("processing/source_proc_data/sdo_index.R")
 source("processing/source_proc_data/rwa_index.R")
 source("processing/source_proc_data/trato_carab.R")
+source("processing/source_proc_data/educ.R")
+source("processing/source_proc_data/indigena.R")
+source("processing/source_proc_data/ingreso_satisfact.R")
+source("processing/source_proc_data/ingreso_tramos.R")
+source("processing/source_proc_data/sexo.R")
+
 
 # 6. Save proc data --------------------------------------------
 
