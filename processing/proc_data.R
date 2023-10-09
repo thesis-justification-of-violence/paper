@@ -7,6 +7,8 @@
 # Executive Summary: This script contains the code to create the database needed to elaborate the analyses for "Who justifies what? The role of the sense of injustice in the justifications of violence in the context of protest.".
 # Date: Sept 03, 2023
 
+rm(list=ls())
+
 # 1. Load packages -----------------------------------
 
 if (!require("pacman")) install.packages("pacman")  #if pacman es missing, install
@@ -37,6 +39,7 @@ procjv <- elsoc_wide_2016_2019 %>% dplyr::select(
   
   ## Justification of violence for social change
   jv_est_2019 = f05_07_w04, # Studennts throw rocks
+  jv_barricada_2019 = f05_06_w04, # Woorkers block streets
   
   # Independent variables
   
@@ -107,6 +110,20 @@ source("processing/source_proc_data/indigena.R")
 source("processing/source_proc_data/ingreso_satisfact.R")
 source("processing/source_proc_data/ingreso_tramos.R")
 source("processing/source_proc_data/sexo.R")
+
+######## FOR REPLICATION ###########
+
+### Independent variables ###
+source("processing/source_proc_data/perceived_gap.R")
+source("processing/source_proc_data/just_gap.R")
+source("processing/source_proc_data/perceived_injustice.R") # This script depends on the others
+
+### Dependent variables ###
+
+source("processing/source_proc_data/jv_barricada_2019.R")
+
+source("processing/source_proc_data/jv_cambio.R")
+source("processing/source_proc_data/jv_control.R")
 
 
 # 6. Save proc data --------------------------------------------
