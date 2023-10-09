@@ -1,13 +1,9 @@
-
-
-
-
 # 0. Identification ----------------------------------
 #Title:  code for a research paper "Who justifies what? The role of the sense of injustice in the justifications of violence in the context of protest."
 #Institution: Centro de Estudios de Conflicto y Cohesión Social (COES)
 #Responsable: Research Assistant
 
-# Executive Summary: This script contains the code to create the database needed to elaborate the analyses for "Who justifies what? The role of the sense of injustice in the justifications of violence in the context of protest.".
+# Executive Summary: This script contains the code make the multivariate analysis for "Who justifies what? The role of the sense of injustice in the justifications of violence in the context of protest.".
 # Date: Sept 03, 2023
 
 # 1. Load packages -----------------------------------
@@ -28,7 +24,7 @@ pacman::p_load(tidyverse,
 # 2. Load data --------------------------------------
 
 procjv <-
-  readRDS("input/data/proc/procjv.RDS") %>% select(
+  readRDS("input/data/proc/procjv.RDS") %>% dplyr::select(
     jv_est_2019_bin,
     jv_carab1_2019_bin,
     jv_carab2_2019_bin,
@@ -259,3 +255,20 @@ test <- data.frame(
 predict(m1_jv_est, test, type = "response") * 100
 predict(m1_jv_carab1, test, type = "response") * 100
 predict(m1_jv_carab2, test, type = "response") * 100
+
+# 7. VIF -------------------------------------------------------------------
+
+car::vif(m1_jv_est)
+car::vif(m2_jv_est)
+car::vif(m3_jv_est)
+car::vif(m4_jv_est)
+
+car::vif(m1_jv_carab1)
+car::vif(m2_jv_carab1)
+car::vif(m3_jv_carab1)
+car::vif(m4_jv_carab1)
+
+car::vif(m1_jv_carab2)
+car::vif(m2_jv_carab2)
+car::vif(m3_jv_carab2)
+car::vif(m4_jv_carab2)
