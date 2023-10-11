@@ -34,6 +34,9 @@ procjv$jv_barricada_2019_bin <- Recode(procjv$jv_barricada_2019, "
                                     5 = 1
                                     ", as.factor = T) %>% drop_labels(.) %>% factor(., levels = c(0,1), labels = c("Not justified", "Justified"))# Create binary variable
 
+procjv$jv_barricada_2019 <-
+  sjlabelled::set_label(procjv$jv_barricada_2019, label = "JV: Workers") # Label factor variable
+
 procjv$jv_barricada_2019_factor <-
   sjlabelled::set_label(procjv$jv_barricada_2019_factor, label = "JV: Workers") # Label factor variable
 

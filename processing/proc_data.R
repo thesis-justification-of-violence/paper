@@ -82,8 +82,12 @@ procjv <- elsoc_wide_2016_2019 %>% dplyr::select(
   edad = m0_edad_w04, # Edad del entrevistado
   pos_pol = c15_w04, # Posicion política
   frec_marcha = c08_02_w04, # Frecuencia participacion en marchas
-  conf_carab = c05_03_w04 # Confianza en carabineros
+  conf_carab = c05_03_w04, # Confianza en carabineros
+  autoper_clase = c33_w04,
+  region = region_cod_w04
 )
+
+frq(procjv$autoper_clase)
 
 # 4. Treat Na's----------------------------------------
 
@@ -124,6 +128,12 @@ source("processing/source_proc_data/jv_barricada_2019.R")
 
 source("processing/source_proc_data/jv_cambio.R")
 source("processing/source_proc_data/jv_control.R")
+
+### Control variables ###
+source("processing/source_proc_data/edad.R")
+source("processing/source_proc_data/pos_pol.R")
+source("processing/source_proc_data/region.R")
+
 
 
 # 6. Save proc data --------------------------------------------

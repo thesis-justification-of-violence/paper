@@ -6,3 +6,5 @@ procjv <- procjv %>% mutate(
 )
 
 frq(procjv$jv_cambio)
+
+procjv$jv_cambio <-sjlabelled::set_label(procjv$jv_cambio, label = "JV: Social Change Mean") # Label factor variable

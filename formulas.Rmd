@@ -1,0 +1,32 @@
+---
+title: "Untitled"
+author: "Martín Venegas"
+date: "2023-10-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Jasso
+
+### Evaluación de Injusticia: experiencia de injusticia para una situación de distribución de recompensas de un recompensado
+
+$J_{obrero} = \frac{\text{salario percibido}_{obrero}}{\text{salario justo}_{obrero}}$
+
+$J_{gerente} = \frac{\text{salario percibido}_{gerente}}{\text{salario justo}_{gerente}}$
+
+## Castillo
+
+### Brecha percibida: percepción de desigualdad
+
+$\text{Brecha percibida} = \frac{\text{salario percibido}_{gerente}}{\text{salario percibido}_{obrero}}$
+
+### Brecha justa: justificación de la desigualdad
+
+$\text{Brecha justa} = \frac{\text{salario justo}_{gerente}}{\text{salario justo}_{obrero}}$
+
+### Este paper: usa las brechas de Castillo y además usan uno que formulan ellos (aunque no lo plantean asi) que es:
+
+$\text{Injusticia percibida} = \frac{\text{Brecha percibida}}{\text{Brecha justa}}$
